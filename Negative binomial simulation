@@ -1,0 +1,34 @@
+library(MASS)
+
+set.seed(111)
+
+# NB in 1 year, with rate = 1, dispersion = 1
+NB <- rnegbin(50000, mu = 1, theta = 1)
+
+# NB in 0.4 year and 0.6 year, sum of different parts is not NB in 1 year
+# Expectation equals and variance is much smaller
+NB1 <- rnegbin(50000, mu = 0.4, theta = 1)
+NB2 <- rnegbin(50000, mu = 0.6, theta = 1)
+NB_sum <- NB1 + NB2
+
+
+# Simulated using gamma poisson
+gamma1 <- rgamma(50000, shape = 1, scale = 0.4)
+gamma2 <- rgamma(50000, shape = 1, scale = 0.6)
+gamma <- rgamma(50000, shape = 1, scale = 1)
+
+poi_gamma <- rpois(50000, gamma)
+poi_split_gamma <- rpois(50000, 0.4 * gamma) + rpois(50000, 0.6 * gamma)
+poi_sep_gamma <- rpois(50000, gamma1) + rpois(50000, gamma2)
+
+
+data.frame(
+  row.names = c("NB", "NB1+NB2", "Gamma-Poisson", "Gamma-Poisson-split-lambda", "Gamma-Poisson-separate-lambda"),
+  mean = c(mean(NB), mean(NB_sum), mean(poi_gamma), mean(poi_split_gamma), mean(poi_sep_gamma)),
+  var = c(var(NB), var(NB_sum), var(poi_gamma), var(poi_split_gamma), var(poi_sep_gamma))
+)
+
+# If we want to simulated interim data for negative binomial endpoint
+# We should simulate it direcly using gamma-poisson mixture, and make sure that for an individual, the same poissom lambda is used through out the study.
+
+# The arrival interval of a negative binomial process is the gamma-exponential distribution (Pareto distribution).
